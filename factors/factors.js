@@ -67,6 +67,7 @@ function getnextprime(){
 
     return nextPrime;
 }
+
 function debug_log(...args){
     return __.dlog(...args)
 }
@@ -77,11 +78,11 @@ function getsomeprimes(limit){
     if(p[p.length-1]>=limit) {
         return;
     } 
-    debug_log();
-    debug_log(`number of primes: ${p[p.length-1]}`);
-    debug_log(`      max  prime: ${p.length}`);
-    debug_log(`getting more primes upto: `,limit);
-    debug_log();
+    __.dlog();
+    __.dlog(`number of primes: ${p[p.length-1]}`);
+    __.dlog(`      max  prime: ${p.length}`);
+    __.dlog(`getting more primes upto: `,limit);
+    __.dlog();
 
     let i=p[p.length-1]+2;
     let ic = 0;
@@ -107,14 +108,19 @@ function getsomeprimes(limit){
             if( tic > lic ){
                 // lic = lic*2;
                 ++lic;
-                process.stdout.write(` ${ic}`)
+                // process.stdout.write(` ${ic}`)
+                __.dlog(``)
+                __.dlog(` ${ic}`)
+                __.dlog(` primes array length:`, p.length);
+                __.dlog(` primes  set  length:`, ps.size);
+                
             }
         }
     }  
-    debug_log();
-    debug_log(`this many more tested: `, it)
-    debug_log(`this many more found:  `, ic)
-    debug_log();
+    __.dlog();
+    __.dlog(`this many more tested: `, it)
+    __.dlog(`this many more found:  `, ic)
+    __.dlog();
     // let arrps = [...p].sort((a,b)=>a-b)
     // debug_log('primes set:');
     // debug_log(arrps);
@@ -138,62 +144,81 @@ const get_factors=(n)=>{
     if(_factorsmap.has(n)){
       return _factorsmap.get(n);
     }
-    let factors = new Set([1,n]);
+    let factors = [];
     if( isItPrime(n) ){
+        factors = [1,n]
+        _factorsmap.set(n,factors)
         return factors;
     }
-    let stop = Math.ceil( Math.sqrt(n) );
+    // let stop = Math.ceil( Math.sqrt(n) );
+
+    let factors_front = [1];
+    let factors_back = [n];
+    __.dlog();
+    __.dlog(`factors_front: `,factors_front);
+    __.dlog(`factors_back: `, factors_back);
+
     let last = n;
-    // for(let i=2; i<last && i<=stop; ++i){
-    for(let i=2; i<=last; ++i){
+    for(let i=2; i<last; ++i){  // for(let i=2; i<last && i<=stop; ++i){
         if( n % i === 0 ){ 
-           factors.add(i);
-           last = n/i;
-           factors.add(last);
+            factors_front.push(i);
+            last = n/i;
+            factors_back.unshift(last);
+            __.dlog();
+            __.dlog(`factors_front: `,factors_front);
+            __.dlog(`factors_back: `, factors_back);
         }
     }
-    factors = new Set([
-        Array
-            .from(factors)
-            .sort((a,b)=>a-b)
-    ]);
+    if(factors_front[factors_front.length-1]===factors_back[0]){
+        factors_front.pop();
+    }
+    factors = factors_front.concat(factors_back);
     _factorsmap.set(n,factors)
     return factors;
 }
 
 let _primefactorsmap = new Map();
 const get_prime_factors=(n)=>{
+    __.dlog(`======================`);
+    __.dlog(`inside function(n:${n}){`);
+
     if(_primefactorsmap.has(n)){
       return _primefactorsmap.get(n);
     }
     if( isItPrime(n) ){
-        return new Set([n]);
+        _primefactorsmap.set(n,[[n],[1]])
+        return [[n],[1]];
     }
     let stop = Math.ceil( Math.sqrt(n) )+1;
-    __.clog(`stop: `,stop)
-    let pfactors = new Set();
+    __.dlog(`stop: `,stop)
+    let pfactors = [];
+    let pfccount = [];
     let w = n;
     for(let i=0; w>1 && p[i]<=stop; ++i){
         let tp = p[i];
-        __.clog(`w: `,w,`  tp: `,tp)
+        __.dlog(`w: `,w,`  tp: `,tp)
         if( w % tp === 0 ){
-            __.clog(`w: `,w,`  %  tp: `,tp,`  == 0 !!`)
-            __.clog(`          tp: `,tp,` <<== a prime factor`)
-            pfactors.add(tp);
+            __.dlog(`w: `,w,`  %  tp: `,tp,`  == 0 !!`)
+            __.dlog(`          tp: `,tp,` <<== a prime factor`)
+            pfactors.push(tp);
+            pfccount.push(1);
             w /= tp;
-            while( w % tp === 0 )
+            while( w % tp === 0 ){
                 w /= tp;
+                pfccount[pfccount.length-1] += 1;
+            }
             if( isItPrime(w) ){
-                __.clog(`w: `,w,`        <<== a prime factor`)
+                __.dlog(`w: `,w,`        <<== a prime factor`)
 
-                pfactors.add(w);
+                pfactors.push(w);
+                pfccount.push(1);
                 break;
             }
         }
         getprimeatindex(i+1);
     }
     _primefactorsmap.set(n,pfactors)
-    return pfactors;
+    return [pfactors,pfccount];
 }
   
     
@@ -202,14 +227,23 @@ if(!__.parseCommandLineArgs('solution')){
     return 0;
 }
 let nums = __.getNumbersFromCommandLine();
+if(nums.length>0){
+    __.dlog();
+}
 while(nums.length>0){
     let n = nums.shift();
     let facters = get_factors(n);
     let ptime_factors = get_prime_factors(n)
 
-    __.clog();
-    __.clog(n, `:       factors: `, facters )
-    __.clog(n, `: prime factors: `, ptime_factors )
+    __.clog('--------------------------------------');
+    __.clog(n, `: prime factors: `)
+    __.clog(   `      `,ptime_factors[0] )
+    __.clog(   `      `,ptime_factors[1] )
+    __.clog(n, `:       factors: `, facters ) // pfccount
+    __.clog('======================================');
 
-    __.slog(n, ptime_factors, facters)
+    __.slog()
+    __.slog(n, ptime_factors[0])
+    __.slog(n, ptime_factors[1])
+    __.slog(n, facters)
 }
