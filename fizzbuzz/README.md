@@ -18,10 +18,11 @@ Problem 1
 python fizzbuzz [list of integer separated by spaces]
 
 #### Examples:
+```
 python3 fizzbuzz.py 2
 python3 fizzbuzz.py 3
 python3 fizzbuzz.py 5
 python3 fizzbuzz.py 6
 python3 fizzbuzz.py 15
 python3 fizzbuzz.py -5 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 "bad input"
-
+```
