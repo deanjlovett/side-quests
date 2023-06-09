@@ -13,7 +13,7 @@ def fizzbuzz(n: int) -> str:
 
 def main(argv):
     n = len(sys.argv)
-    if n == 1:
+    if n == 1 or "-h" in sys.argv or "--help" in sys.argv:
         print( f"Usage: python3 {sys.argv[0]} [list of space separated integers]")
     else:
         for i in range(1, n):
